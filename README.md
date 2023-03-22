@@ -12,9 +12,7 @@ Just a quick example on how to test a particular RHSSO instance with [Python uni
 
 ## What Does It Test
 
-This example tests the following: 
-
-- There is a realm called ``frankfurt`` and insider this realm there is:
+This example tests that there is a realm called ``frankfurt`` (can be changed see instructions below) and that inside this realm there is the following components:
   - A general role called ``offline_access`` (Almost always succeed because is a role created by RHSSO)
   - A client named ``MyClient`` exists and is not public. 
 
