@@ -10,6 +10,30 @@ USER = "admin"
 PASSWORD = "admin"
 REALM = "frankfurt"
 
+class Themes:
+    def __init__(self, kc):
+        self.kc = kc
+        self.installed_themes = self.load()
+
+    def load(self):
+        headers = {
+            'Content-type': 'application/json',
+            'Authorization': 'Bearer ' + self.kc.token.get_token()
+        }
+
+        response = requests.get(f'{ENDPOINT}/auth/admin/serverinfo', headers=headers)
+        info = response.json()
+        return info['themes']
+
+    # This function find a particular theme inside RHSSO
+    def lookup_theme(self, theme_name, section='login'):
+        for theme in self.installed_themes[section]:
+            if theme['name'] == theme_name:
+              return theme
+
+
+        return None
+
 
 class TestingThemes(unittest.TestCase):
     def setUp(self):
@@ -17,6 +41,14 @@ class TestingThemes(unittest.TestCase):
         token = OpenID.createAdminClient(USER, PASSWORD, url=ENDPOINT).getToken()
         self.kc = Keycloak(token, ENDPOINT)
         self.themes = ['dtag', 'dtag-supplier', 'gfnw', 'gfnw-supplier']
+
+    def testing_themes_are_installed(self):
+        rhsso_themes = Themes(self.kc)
+        for theme in self.themes:
+            theme_info_login = rhsso_themes.lookup_theme(theme, section='login')
+            self.assertIsNotNone(theme_info_login, f'Theme {theme} not found.')
+            self.assertListEqual(theme_info_login['locales'], ['en', 'de', 'ru'], f"Locales do not match with [en, de, ru]")
+
 
     def testing_that_themes_are_deployed_successfully(self):
         for theme in self.themes:
